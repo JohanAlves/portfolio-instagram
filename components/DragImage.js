@@ -25,7 +25,6 @@ function DragImage({ onFileChange }) {
     e.preventDefault();
     const newFile = e.target.files[0];
     if (newFile) {
-      console.log(newFile);
       setImage(newFile);
       onFileChange(newFile);
     }

@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react";
 
 function Feed() {
   const { data: session } = useSession();
-  console.log(session);
   return (
     <div
       className={`max-w-lg  mx-auto py-12 sm:py-24 relative ${

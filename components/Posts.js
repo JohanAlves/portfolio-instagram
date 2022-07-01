@@ -20,7 +20,6 @@ function Posts() {
   return (
     <>
       {posts.map((post) => {
-        console.log(post.data());
         return (
           <div
             key={post.id}
