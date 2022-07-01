@@ -21,8 +21,9 @@ import {
 import { HiOutlinePaperAirplane, HiOutlineEmojiHappy } from "react-icons/hi";
 import Moment from "react-moment";
 import { db } from "../firebase";
+import { toast } from "react-toastify";
 
-function Post({ id, username, avatar, image, description }) {
+function Post({ id, username, avatar, image, description, timestamp }) {
   const { data: session } = useSession();
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
@@ -68,15 +69,29 @@ function Post({ id, username, avatar, image, description }) {
       username: session.user.username,
       userImage: session.user.image,
       timestamp: serverTimestamp(),
+    }).catch((error) => {
+      if (error.message.includes("insufficient permissions")) {
+        toast.error("Only admin can make changes in the database");
+      }
     });
   };
 
   const likePost = async () => {
     if (hasLiked) {
-      await deleteDoc(doc(db, "posts", id, "likes", session.user.uid));
+      await deleteDoc(doc(db, "posts", id, "likes", session.user.uid)).catch(
+        (error) => {
+          if (error.message.includes("insufficient permissions")) {
+            toast.error("Only admin can make changes in the database");
+          }
+        }
+      );
     } else {
       await setDoc(doc(db, "posts", id, "likes", session.user.uid), {
         username: session.user.username,
+      }).catch((error) => {
+        if (error.message.includes("insufficient permissions")) {
+          toast.error("Only admin can make changes in the database");
+        }
       });
     }
   };
@@ -101,28 +116,30 @@ function Post({ id, username, avatar, image, description }) {
       />
 
       {/* Post's Buttons line */}
-      <div className="flex items-center p-2.5 justify-between">
-        <div className="flex space-x-4">
-          {hasLiked ? (
-            <BsHeartFill onClick={likePost} className="button text-red-600" />
-          ) : (
-            <BsHeart onClick={likePost} className="button" />
-          )}
-          <BsChatDots className="button" />
-          <HiOutlinePaperAirplane className="button -mt-1 rotate-[60deg]" />
+      {session?.user?.username && (
+        <div className="flex items-center p-2.5 justify-between">
+          <div className="flex space-x-4">
+            {hasLiked ? (
+              <BsHeartFill onClick={likePost} className="button text-red-600" />
+            ) : (
+              <BsHeart onClick={likePost} className="button" />
+            )}
+            <BsChatDots className="button" />
+            <HiOutlinePaperAirplane className="button -mt-1 rotate-[60deg]" />
+          </div>
+          <BsBookmark className="button" />
         </div>
-        <BsBookmark className="button" />
-      </div>
-
-      {/* Likes Count */}
-      {likes.length > 0 && (
-        <p className="py-2.5 pl-2.5 text-sm font-bold">
-          {likes.length} {likes.length == 1 ? "like" : "likes"}
-        </p>
       )}
 
-      {/*  Avatar and description */}
-      <div className="pl-2.5 text-sm pb-6">
+      {/* Likes Count */}
+
+      {/*  Username and description */}
+      <div className="pl-2.5 py-3 text-sm pb-6">
+        {likes.length > 0 && (
+          <p className="pb-1 text-sm font-bold">
+            {likes.length} {likes.length == 1 ? "like" : "likes"}
+          </p>
+        )}
         <span className="font-bold mr-2">{username}</span>
         {description}
       </div>
@@ -154,26 +171,38 @@ function Post({ id, username, avatar, image, description }) {
         </div>
       )}
 
+      {/* Post Time */}
+      <p className="p-2.5 text-xs uppercase text-gray-400">
+        <Moment fromNow>{timestamp.toDate()}</Moment>
+      </p>
+
       {/* Comments input */}
-      <div className="p-2.5 flex border-t border-gray-200">
-        <HiOutlineEmojiHappy className="button" />
-        <input
-          type="text"
-          value={comment}
-          onChange={(e) => {
-            setComment(e.target.value);
-          }}
-          placeholder="Add a comment..."
-          className="flex-1 pl-2 text-sm"
-        />
-        <button
-          disabled={!comment.trim()}
-          onClick={sendComment}
-          className="text-violet-500 font-semibold cursor-pointer disabled:text-violet-300 disabled:pointer-events-none"
-        >
-          Post
-        </button>
-      </div>
+      {session?.user?.username ? (
+        <div className="p-2.5 flex border-t border-gray-200">
+          <HiOutlineEmojiHappy className="button" />
+          <input
+            type="text"
+            value={comment}
+            onChange={(e) => {
+              setComment(e.target.value);
+            }}
+            placeholder="Add a comment..."
+            className="flex-1 pl-2 text-sm ring-transparent"
+          />
+          <button
+            disabled={!comment.trim()}
+            onClick={sendComment}
+            className="text-violet-500 font-semibold cursor-pointer disabled:text-violet-300 disabled:pointer-events-none"
+          >
+            Post
+          </button>
+        </div>
+      ) : (
+        <div className="p-2.5 flex border-t border-gray-200">
+          {" "}
+          Please Log in before like and comment on posts.
+        </div>
+      )}
     </>
   );
 }

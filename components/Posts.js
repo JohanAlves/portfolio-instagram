@@ -20,6 +20,7 @@ function Posts() {
   return (
     <>
       {posts.map((post) => {
+        console.log(post.data());
         return (
           <div
             key={post.id}
@@ -31,6 +32,7 @@ function Posts() {
               avatar={post.data().profileImg}
               description={post.data().caption}
               image={post.data().image}
+              timestamp={post.data().timestamp}
             />
           </div>
         );

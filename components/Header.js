@@ -16,10 +16,21 @@ function Header() {
   return (
     <header className="border-b  sm:border-gray-200 bg-white fixed w-full z-50">
       <div className="max-w-5xl mx-auto h-12 sm:h-16 flex items-center px-5">
-        <div className="flex  sm:hidden relative  justify-start">
-          <BsCamera className=" w-6 h-6" />
-        </div>
-        <div className="flex flex-1 justify-center sm:justify-start items-center">
+        {session?.user?.username && (
+          <div className="flex  sm:hidden relative  justify-start">
+            <BsCamera
+              className=" w-6 h-6"
+              onClick={() => {
+                setModalOpen(true);
+              }}
+            />
+          </div>
+        )}
+        <div
+          className={`flex flex-1 sm:justify-start items-center ${
+            session?.user?.username ? "justify-center" : "justify-start"
+          }`}
+        >
           <div
             className="relative w-[110px] sm:w-[102px] h-7 mt-1 sm:h-16 cursor-pointer"
             onClick={() => {
@@ -77,7 +88,9 @@ function Header() {
               </div>
             </>
           ) : (
-            <button onClick={signIn}>Sign In</button>
+            <button className="button !w-auto" onClick={signIn}>
+              Sign In
+            </button>
           )}
         </div>
       </div>

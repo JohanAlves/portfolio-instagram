@@ -52,6 +52,7 @@ function Stories() {
             username={session?.user?.username}
           />
         </div>
+
         {USERS.map((user, i) => (
           <div className="ml-1" key={i}>
             <Story {...user} />

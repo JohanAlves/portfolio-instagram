@@ -15,6 +15,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { toast } from "react-toastify";
 
 function Modal() {
   const [modalOpen, setModalOpen] = useRecoilState(modalState);
@@ -30,7 +31,6 @@ function Modal() {
     noClick: true,
     noKeyboard: true,
     accept: {
-      "image/png": [".png"],
       "image/jpg": [".jpg"],
       "image/jpeg": [".jpeg"],
     },
@@ -52,7 +52,16 @@ function Modal() {
       caption: captionRef.current.value,
       profileImg: session.user.image,
       timestamp: serverTimestamp(),
+    }).catch((error) => {
+      if (error.message.includes("insufficient permissions")) {
+        toast.error("Only admin can add new posts");
+        setModalOpen(false);
+        setLoading(false);
+        setSelectedImage(null);
+        return;
+      }
     });
+    if (!docRef) return;
 
     const imageRef = ref(storage, `posts/${docRef.id}/image`);
 
@@ -79,7 +88,7 @@ function Modal() {
               setModalOpen(false);
               setSelectedImage(null);
             }}
-            className="absolute right-10 top-5 text-white button z-[51]"
+            className="absolute right-3 top-3 text-white button z-[51] sm:right-10 sm:top-5"
           />
 
           <motion.div
