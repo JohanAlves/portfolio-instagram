@@ -1,8 +1,14 @@
 import { getProviders, signIn, useSession } from "next-auth/react";
 import Head from "next/head";
+import { router } from "next/router";
+import { useEffect } from "react";
 
 export default function SignIn({ providers }) {
   const { data: session } = useSession();
+
+  useEffect(() => {
+    if (session) router.push("/");
+  }, [session]);
 
   return (
     <>

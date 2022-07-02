@@ -10,7 +10,7 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   BsThreeDots,
   BsChatDots,
@@ -29,13 +29,14 @@ function Post({ id, username, avatar, image, description, timestamp }) {
   const [comments, setComments] = useState([]);
   const [likes, setLikes] = useState([]);
   const [hasLiked, setHasLiked] = useState(false);
+  const commentRef = useRef(null);
 
   useEffect(
     () =>
       onSnapshot(
         query(
           collection(db, "posts", id, "comments"),
-          orderBy("timestamp", "desc")
+          orderBy("timestamp", "asc")
         ),
         (snapshot) => setComments(snapshot.docs)
       ),
@@ -146,7 +147,10 @@ function Post({ id, username, avatar, image, description, timestamp }) {
 
       {/* Comments */}
       {comments.length > 0 && (
-        <div className="ml-5 h-20 overflow-scroll scrollbar-thumb-gray-300  scrollbar-thin ">
+        <div
+          ref={commentRef}
+          className="scroll-smooth ml-5 h-20 overflow-scroll scrollbar-thumb-gray-300 scrollbar-thin"
+        >
           {comments.map((comment) => (
             <div
               key={comment.id}
@@ -170,11 +174,14 @@ function Post({ id, username, avatar, image, description, timestamp }) {
           ))}
         </div>
       )}
+      {commentRef.current?.scrollTo(0, commentRef.current?.scrollHeight)}
 
       {/* Post Time */}
-      <p className="p-2.5 text-xs uppercase text-gray-400">
-        <Moment fromNow>{timestamp.toDate()}</Moment>
-      </p>
+      {timestamp && (
+        <p className="p-2.5 text-xs uppercase text-gray-400">
+          <Moment fromNow>{timestamp.toDate()}</Moment>
+        </p>
+      )}
 
       {/* Comments input */}
       {session?.user?.username ? (
